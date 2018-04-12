@@ -19,8 +19,6 @@
 #ifndef __FPN_H__
 #define __FPN_H__
 
-#include <stdlib.h>
-
 #include <gmp.h>
 #include <mpfr.h>
 
