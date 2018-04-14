@@ -21,10 +21,15 @@
 
 #include "fpn.h"
 
+void clear(struct val val) {
+    BIND(val, data) { mpq_clear(data); } OR { mpfr_clear(data); } UNBIND;
+    free(val.data);
+}
+
 void fpn_push(struct fpn *fpn, void *data, char type) {
     if (fpn->stackSize == fpn->bufSize) {
         fpn->stack = realloc(fpn->stack,
-                (fpn->bufSize += FPN_MAX_EXTRA) * sizeof *fpn->stack);
+                (fpn->bufSize += FPN_MIN_EXTRA) * sizeof *fpn->stack);
     }
     fpn->stack[fpn->stackSize].data = data;
     fpn->stack[fpn->stackSize].type = type;
@@ -34,11 +39,19 @@ void fpn_push(struct fpn *fpn, void *data, char type) {
 void fpn_push_q(struct fpn *fpn, mpq_t q) { fpn_push(fpn, q, RATIONAL); }
 void fpn_push_f(struct fpn *fpn, mpfr_t f) { fpn_push(fpn, f, FLOAT); }
 
+void fpn_pop(struct fpn *fpn) {
+    clear(fpn->stack[--fpn->stackSize]);
+    if (fpn->bufSize - fpn->stackSize > FPN_MAX_EXTRA) {
+        fpn->stack = realloc(fpn->stack,
+                (fpn->stackSize + FPN_MIN_EXTRA) * sizeof *fpn->stack);
+    }
+}
+
 struct fpn *fpn_init() {
     struct fpn *fpn = malloc(sizeof *fpn);
-    fpn->stack = malloc(FPN_MAX_EXTRA * sizeof *fpn->stack);
+    fpn->stack = malloc(FPN_MIN_EXTRA * sizeof *fpn->stack);
     fpn->stackSize = 0;
-    fpn->bufSize = FPN_MAX_EXTRA;
+    fpn->bufSize = FPN_MIN_EXTRA;
     return fpn;
 }
 
@@ -46,7 +59,7 @@ void fpn_run(struct fpn *fpn, char *code) {
     while (*code) {
         switch (*code) {
             case '1': {
-                mpq_t q;
+                mpq_ptr q = malloc(sizeof *q);
                 mpq_init(q);
                 mpq_set_ui(q, 1, 1);
                 fpn_push_q(fpn, q);
@@ -54,44 +67,23 @@ void fpn_run(struct fpn *fpn, char *code) {
             }
             case '+':
                 CHECK(2, "+");
-                void *data;
-                char type;
-                BIND(ARG1, a) {
-                    BIND(ARG2, b) {
-                        mpq_t r;
-                        mpq_init(r);
-                        mpq_add(r, a, b);
-                        mpq_clears(a, b, (mpq_ptr) 0);
-                        data = r;
-                        type = RATIONAL;
+                BIND(ARG2, a) {
+                    BIND(ARG1, b) {
+                        mpq_add(a, a, b);
                     } OR {
-                        mpfr_t r;
-                        mpfr_init(r);
-                        mpfr_add_q(r, b, a, MPFR_RNDN);
-                        mpq_clear(a);
-                        mpfr_clear(b);
-                        data = r;
-                        type = FLOAT;
+                        mpfr_add_q(b, b, a, MPFR_RNDN);
+                        struct val tmp = ARG2;
+                        ARG2 = ARG1;
+                        ARG1 = tmp;
                     } UNBIND;
                 } OR {
-                    BIND(ARG2, b) {
-                        mpfr_t r;
-                        mpfr_init(r);
-                        mpfr_add_q(r, a, b, MPFR_RNDN);
-                        mpfr_clear(a);
-                        mpq_clear(b);
-                        data = r;
-                        type = FLOAT;
+                    BIND(ARG1, b) {
+                        mpfr_add_q(a, a, b, MPFR_RNDN);
                     } OR {
-                        mpfr_t r;
-                        mpfr_init(r);
-                        mpfr_add(r, a, b, MPFR_RNDN);
-                        mpfr_clears(a, b, (mpfr_ptr) 0);
-                        data = r;
-                        type = FLOAT;
+                        mpfr_add(a, a, b, MPFR_RNDN);
                     } UNBIND;
                 } UNBIND;
-                fpn_push(fpn, data, type);
+                fpn_pop(fpn);
                 break;
             case 'p':
                 CHECK(1, "p");
@@ -108,13 +100,7 @@ void fpn_run(struct fpn *fpn, char *code) {
 }
 
 void fpn_destroy(struct fpn *fpn) {
-    for (int i = 0; i < fpn->stackSize; ++i) {
-        BIND(fpn->stack[i], val) {
-            mpq_clear(val);
-        } OR {
-            mpfr_clear(val);
-        } UNBIND;
-    }
+    for (int i = 0; i < fpn->stackSize; ++i) clear(fpn->stack[i]);
     free(fpn->stack);
     free(fpn);
 }

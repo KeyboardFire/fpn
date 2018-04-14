@@ -24,8 +24,8 @@
 
 // I'm very sorry
 #define BIND(val, x) do { \
-    mpfr_t x; x[0] = *(__mpfr_struct*)(val).data; \
-    if (val.type == RATIONAL) { mpq_t x; x[0] = *(__mpq_struct*)(val).data;
+    mpfr_ptr x = (val).data; \
+    if (val.type == RATIONAL) { mpq_ptr x = (val).data;
 #define OR } else
 #define UNBIND } while (0)
 #define CHECK(n, op) do { \
@@ -47,7 +47,8 @@ struct val {
     char type;
 };
 
-#define FPN_MAX_EXTRA 30
+#define FPN_MIN_EXTRA 50
+#define FPN_MAX_EXTRA 100
 struct fpn {
     struct val *stack;
     int stackSize;
