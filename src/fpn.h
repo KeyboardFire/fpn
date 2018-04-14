@@ -26,7 +26,7 @@
 #define BIND(val, x) do { \
     mpfr_t x; x[0] = *(__mpfr_struct*)(val).data; \
     if (val.type == RATIONAL) { mpq_t x; x[0] = *(__mpq_struct*)(val).data;
-#define OR }
+#define OR } else
 #define UNBIND } while (0);
 
 #define RATIONAL 1
@@ -36,7 +36,7 @@ struct val {
     char type;
 };
 
-#define MAX_EXTRA 30
+#define FPN_MAX_EXTRA 30
 struct fpn {
     struct val *stack;
     int stackSize;
@@ -44,6 +44,7 @@ struct fpn {
 };
 
 struct fpn *fpn_init();
+void fpn_run(struct fpn *fpn, char *code);
 void fpn_destroy(struct fpn *fpn);
 
 #endif

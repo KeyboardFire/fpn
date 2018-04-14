@@ -22,6 +22,7 @@
 
 int main(int argc, char* argv[]) {
     struct fpn *fpn = fpn_init();
+    fpn_run(fpn, argv[1]);
     fpn_destroy(fpn);
     return 0;
 }
