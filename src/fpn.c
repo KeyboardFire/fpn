@@ -52,6 +52,7 @@ struct fpn *fpn_init() {
     fpn->stack = malloc(FPN_MIN_EXTRA * sizeof *fpn->stack);
     fpn->stackSize = 0;
     fpn->bufSize = FPN_MIN_EXTRA;
+    fpn->round = MPFR_RNDN;
     return fpn;
 }
 
@@ -71,16 +72,16 @@ void fpn_run(struct fpn *fpn, char *code) {
                     BIND(ARG1, b) {
                         mpq_add(a, a, b);
                     } OR {
-                        mpfr_add_q(b, b, a, MPFR_RNDN);
+                        mpfr_add_q(b, b, a, fpn->round);
                         struct val tmp = ARG2;
                         ARG2 = ARG1;
                         ARG1 = tmp;
                     }
                 } OR {
                     BIND(ARG1, b) {
-                        mpfr_add_q(a, a, b, MPFR_RNDN);
+                        mpfr_add_q(a, a, b, fpn->round);
                     } OR {
-                        mpfr_add(a, a, b, MPFR_RNDN);
+                        mpfr_add(a, a, b, fpn->round);
                     }
                 }
                 fpn_pop(fpn);
@@ -90,7 +91,7 @@ void fpn_run(struct fpn *fpn, char *code) {
                 BIND(ARG1, val) {
                     mpq_out_str(stdout, 10, val);
                 } OR {
-                    mpfr_out_str(stdout, 10, 0, val, MPFR_RNDN);
+                    mpfr_out_str(stdout, 10, 0, val, fpn->round);
                 }
                 puts("");
                 break;

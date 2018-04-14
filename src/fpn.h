@@ -50,6 +50,7 @@ struct fpn {
     struct val *stack;
     int stackSize;
     int bufSize;
+    int round;
 };
 
 struct fpn *fpn_init();
