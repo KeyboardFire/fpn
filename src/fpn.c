@@ -22,7 +22,7 @@
 #include "fpn.h"
 
 void clear(struct val val) {
-    BIND(val, data) { mpq_clear(data); } OR { mpfr_clear(data); } UNBIND;
+    BIND(val, data) { mpq_clear(data); } OR { mpfr_clear(data); }
     free(val.data);
 }
 
@@ -75,14 +75,14 @@ void fpn_run(struct fpn *fpn, char *code) {
                         struct val tmp = ARG2;
                         ARG2 = ARG1;
                         ARG1 = tmp;
-                    } UNBIND;
+                    }
                 } OR {
                     BIND(ARG1, b) {
                         mpfr_add_q(a, a, b, MPFR_RNDN);
                     } OR {
                         mpfr_add(a, a, b, MPFR_RNDN);
-                    } UNBIND;
-                } UNBIND;
+                    }
+                }
                 fpn_pop(fpn);
                 break;
             case 'p':
@@ -91,7 +91,7 @@ void fpn_run(struct fpn *fpn, char *code) {
                     mpq_out_str(stdout, 10, val);
                 } OR {
                     mpfr_out_str(stdout, 10, 0, val, MPFR_RNDN);
-                } UNBIND;
+                }
                 puts("");
                 break;
         }

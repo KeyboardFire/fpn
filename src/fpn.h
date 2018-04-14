@@ -23,11 +23,10 @@
 #include <mpfr.h>
 
 // I'm very sorry
-#define BIND(val, x) do { \
+#define BIND(val, x) \
     mpfr_ptr x = (val).data; \
     if (val.type == RATIONAL) { mpq_ptr x = (val).data;
 #define OR } else
-#define UNBIND } while (0)
 #define CHECK(n, op) if (fpn->stackSize < n) { \
             fprintf(stderr, op ": not enough operands " \
                     "(found %d, expected " #n ")\n", fpn->stackSize); \
