@@ -28,13 +28,11 @@
     if (val.type == RATIONAL) { mpq_ptr x = (val).data;
 #define OR } else
 #define UNBIND } while (0)
-#define CHECK(n, op) do { \
-        if (fpn->stackSize < n) { \
+#define CHECK(n, op) if (fpn->stackSize < n) { \
             fprintf(stderr, op ": not enough operands " \
                     "(found %d, expected " #n ")\n", fpn->stackSize); \
             break; \
-        } \
-    } while (0)
+        }
 #define ARG(n) (fpn->stack[fpn->stackSize-(n)])
 #define ARG1 ARG(1)
 #define ARG2 ARG(2)
