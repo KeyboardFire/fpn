@@ -53,10 +53,49 @@ void fpn_run(struct fpn *fpn, char *code) {
                 break;
             }
             case '+':
+                CHECK(2, "+");
+                void *data;
+                char type;
+                BIND(ARG1, a) {
+                    BIND(ARG2, b) {
+                        mpq_t r;
+                        mpq_init(r);
+                        mpq_add(r, a, b);
+                        mpq_clears(a, b, (mpq_ptr) 0);
+                        data = r;
+                        type = RATIONAL;
+                    } OR {
+                        mpfr_t r;
+                        mpfr_init(r);
+                        mpfr_add_q(r, b, a, MPFR_RNDN);
+                        mpq_clear(a);
+                        mpfr_clear(b);
+                        data = r;
+                        type = FLOAT;
+                    } UNBIND;
+                } OR {
+                    BIND(ARG2, b) {
+                        mpfr_t r;
+                        mpfr_init(r);
+                        mpfr_add_q(r, a, b, MPFR_RNDN);
+                        mpfr_clear(a);
+                        mpq_clear(b);
+                        data = r;
+                        type = FLOAT;
+                    } OR {
+                        mpfr_t r;
+                        mpfr_init(r);
+                        mpfr_add(r, a, b, MPFR_RNDN);
+                        mpfr_clears(a, b, (mpfr_ptr) 0);
+                        data = r;
+                        type = FLOAT;
+                    } UNBIND;
+                } UNBIND;
+                fpn_push(fpn, data, type);
                 break;
             case 'p':
-                // TODO make this fail if the stack is empty
-                BIND(fpn->stack[fpn->stackSize-1], val) {
+                CHECK(1, "p");
+                BIND(ARG1, val) {
                     mpq_out_str(stdout, 10, val);
                 } OR {
                     mpfr_out_str(stdout, 10, 0, val, MPFR_RNDN);
