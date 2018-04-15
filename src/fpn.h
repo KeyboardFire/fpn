@@ -30,7 +30,7 @@
 #define CHECK(n, op) if (fpn->stackSize < n) { \
             fprintf(stderr, op ": not enough operands " \
                     "(found %d, expected " #n ")\n", fpn->stackSize); \
-            break; \
+            return; \
         }
 #define ARG(n) (fpn->stack[fpn->stackSize-(n)])
 #define ARG1 ARG(1)
