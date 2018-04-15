@@ -3,7 +3,7 @@ TARGET = bin/$(NAME)
 MANPAGE = $(NAME).1
 PREFIX ?= /usr/local
 CC ?= gcc
-LIBS = -lgmp -lmpfr
+LIBS = -lgmp -lmpfr -lreadline
 .PHONY: all debug release install clean
 
 all: $(TARGET)

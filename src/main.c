@@ -22,6 +22,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "fpn.h"
 
 void usage(char *name) {
@@ -31,8 +34,6 @@ void usage(char *name) {
 }
 
 int main(int argc, char* argv[]) {
-    struct fpn *fpn = fpn_init();
-
     // parse arguments
     int arg, help = 0, version = 0, interactive = 0;
     FILE *fp = 0;
@@ -111,19 +112,26 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    if (interactive) {
-        // TODO
-        return 0;
-    }
+    struct fpn *fpn = fpn_init();
 
-    if (!!fp == !!execstr) {
-        usage(argv[0]);
-        return 1;
+    if (interactive) {
+        char *line;
+        while ((line = readline("fpn> "))) {
+            add_history(line);
+            fpn_run(fpn, line);
+        }
+        puts("");  // don't end a line without an LF
+        fpn_destroy(fpn);
+        return 0;
     }
 
     char *data = 0;
     size_t datalen;
-    if (fp) {
+    if (execstr) {
+        datalen = strlen(execstr);
+        data = malloc((datalen + 1) * sizeof *data);
+        strcpy(data, execstr);
+    } else {
         // read file into memory
         size_t len = 0, read;
         char *newdata;
@@ -152,10 +160,6 @@ int main(int argc, char* argv[]) {
         fclose(fp);
 
         datalen = len - BUF_SIZE + read;
-    } else {
-        datalen = strlen(execstr);
-        data = malloc((datalen + 1) * sizeof *data);
-        strcpy(data, execstr);
     }
 
     fpn_run(fpn, data);
