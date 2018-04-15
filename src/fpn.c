@@ -37,6 +37,9 @@ void fpn_run(struct fpn *fpn, char *code) {
             code = fpn_op_const(fpn, code);
         } else switch (*code) {
             case '+': fpn_op_add(fpn); ++code; break;
+            case '-': fpn_op_sub(fpn); ++code; break;
+            case '*': fpn_op_mul(fpn); ++code; break;
+            case '/': fpn_op_div(fpn); ++code; break;
             case 'p': fpn_op_print(fpn); ++code; break;
             default: ++code;
         }

@@ -4,6 +4,9 @@
 #include "fpn.h"
 
 void fpn_op_add(struct fpn *fpn);
+void fpn_op_sub(struct fpn *fpn);
+void fpn_op_mul(struct fpn *fpn);
+void fpn_op_div(struct fpn *fpn);
 void fpn_op_print(struct fpn *fpn);
 char* fpn_op_const(struct fpn *fpn, char *code);
 

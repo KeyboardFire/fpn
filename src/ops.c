@@ -50,6 +50,71 @@ void fpn_op_add(struct fpn *fpn) {
     fpn_pop(fpn);
 }
 
+void fpn_op_sub(struct fpn *fpn) {
+    CHECK(2, "-");
+    BIND(ARG2, a) {
+        BIND(ARG1, b) {
+            mpq_sub(a, a, b);
+        } OR {
+            mpfr_sub_q(b, b, a, fpn->round);
+            mpfr_neg(b, b, fpn->round);
+            struct val tmp = ARG2;
+            ARG2 = ARG1;
+            ARG1 = tmp;
+        }
+    } OR {
+        BIND(ARG1, b) {
+            mpfr_sub_q(a, a, b, fpn->round);
+        } OR {
+            mpfr_sub(a, a, b, fpn->round);
+        }
+    }
+    fpn_pop(fpn);
+}
+
+void fpn_op_mul(struct fpn *fpn) {
+    CHECK(2, "*");
+    BIND(ARG2, a) {
+        BIND(ARG1, b) {
+            mpq_mul(a, a, b);
+        } OR {
+            mpfr_mul_q(b, b, a, fpn->round);
+            struct val tmp = ARG2;
+            ARG2 = ARG1;
+            ARG1 = tmp;
+        }
+    } OR {
+        BIND(ARG1, b) {
+            mpfr_mul_q(a, a, b, fpn->round);
+        } OR {
+            mpfr_mul(a, a, b, fpn->round);
+        }
+    }
+    fpn_pop(fpn);
+}
+
+void fpn_op_div(struct fpn *fpn) {
+    CHECK(2, "/");
+    BIND(ARG2, a) {
+        BIND(ARG1, b) {
+            mpq_div(a, a, b);
+        } OR {
+            mpfr_div_q(b, b, a, fpn->round);
+            mpfr_ui_div(b, 1, b, fpn->round);
+            struct val tmp = ARG2;
+            ARG2 = ARG1;
+            ARG1 = tmp;
+        }
+    } OR {
+        BIND(ARG1, b) {
+            mpfr_div_q(a, a, b, fpn->round);
+        } OR {
+            mpfr_div(a, a, b, fpn->round);
+        }
+    }
+    fpn_pop(fpn);
+}
+
 void fpn_op_print(struct fpn *fpn) {
     CHECK(1, "p");
     BIND(ARG1, val) {
