@@ -58,14 +58,32 @@ struct fpn *fpn_init() {
 
 void fpn_run(struct fpn *fpn, char *code) {
     while (*code) {
-        switch (*code) {
-            case '1': {
+        if ('0' <= *code && *code <= '9') {
+            int isFloat = 0;
+            char *end, old;
+            for (end = code; *end; ++end) {
+                if (*end == '.') isFloat = 1;
+                else if (*end < '0' || '9' < *end) break;
+            }
+            old = *end;
+            *end = 0;
+
+            if (isFloat) {
+                mpfr_ptr f = malloc(sizeof *f);
+                mpfr_init(f);
+                mpfr_set_str(f, code, 10, fpn->round); // TODO assert?
+                fpn_push_f(fpn, f);
+            } else {
                 mpq_ptr q = malloc(sizeof *q);
                 mpq_init(q);
-                mpq_set_ui(q, 1, 1);
+                mpq_set_str(q, code, 10); // TODO assert?
                 fpn_push_q(fpn, q);
-                break;
             }
+
+            *end = old;
+            code = end;
+            continue;
+        } else switch (*code) {
             case '+':
                 CHECK(2, "+");
                 BIND(ARG2, a) {
