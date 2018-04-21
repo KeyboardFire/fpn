@@ -25,7 +25,22 @@ void fpn_op_add(struct fpn *fpn);
 void fpn_op_sub(struct fpn *fpn);
 void fpn_op_mul(struct fpn *fpn);
 void fpn_op_div(struct fpn *fpn);
+
 void fpn_op_print(struct fpn *fpn);
+void fpn_op_dump(struct fpn *fpn);
+
+void fpn_op_dup(struct fpn *fpn);
+void fpn_op_drop(struct fpn *fpn);
+void fpn_op_swap(struct fpn *fpn);
+
+void fpn_op_over(struct fpn *fpn);
+void fpn_op_nip(struct fpn *fpn);
+void fpn_op_rot(struct fpn *fpn);
+
+void fpn_op_pick(struct fpn *fpn);
+void fpn_op_del(struct fpn *fpn);
+void fpn_op_roll(struct fpn *fpn);
+
 char* fpn_op_const(struct fpn *fpn, char *code);
 
 #endif

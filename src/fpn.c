@@ -17,6 +17,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "fpn.h"
 #include "ops.h"
@@ -31,6 +32,10 @@ struct fpn *fpn_init() {
     return fpn;
 }
 
+#define WORD(x) else if (!strncmp(code, #x, sizeof(#x) - 1)) { \
+    (fpn_op_ ## x)(fpn); \
+    code += sizeof(#x) - 1; \
+}
 void fpn_run(struct fpn *fpn, char *code) {
     while (*code) {
         if ('0' <= *code && *code <= '9') {
@@ -40,8 +45,24 @@ void fpn_run(struct fpn *fpn, char *code) {
             case '-': fpn_op_sub(fpn); ++code; break;
             case '*': fpn_op_mul(fpn); ++code; break;
             case '/': fpn_op_div(fpn); ++code; break;
-            case 'p': fpn_op_print(fpn); ++code; break;
-            default: ++code;
+            default:
+            if (0);
+            WORD(add)
+            WORD(sub)
+            WORD(mul)
+            WORD(div)
+            WORD(print)
+            WORD(dump)
+            WORD(dup)
+            WORD(drop)
+            WORD(swap)
+            WORD(over)
+            WORD(nip)
+            WORD(rot)
+            WORD(pick)
+            WORD(del)
+            WORD(roll)
+            else ++code;
         }
     }
 }

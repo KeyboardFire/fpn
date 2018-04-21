@@ -27,6 +27,29 @@
     mpfr_ptr x = (val).data; \
     if (val.type == RATIONAL) { mpq_ptr x = (val).data;
 #define OR } else
+#define BIND_INT(val, x, op) \
+    long x; \
+    BIND(val, tmp) { \
+        if (mpz_cmp_si(mpq_denref(tmp), 1)) { \
+            fprintf(stderr, op ": found non-integer on stack\n"); \
+            return; \
+        } else if (!mpz_fits_slong_p(mpq_numref(tmp))) { \
+            fprintf(stderr, op ": found too-large integer on stack\n"); \
+            return; \
+        } else { \
+            x = mpz_get_si(mpq_numref(tmp)); \
+        } \
+    } OR { \
+        if (!mpfr_integer_p(tmp)) { \
+            fprintf(stderr, op ": found non-integer on stack\n"); \
+            return; \
+        } else if (!mpfr_fits_slong_p(tmp, MPFR_RNDN)) { \
+            fprintf(stderr, op ": found too-large integer on stack\n"); \
+            return; \
+        } else { \
+            x = mpfr_get_si(tmp, MPFR_RNDN); \
+        } \
+    }
 #define CHECK(n, op) if (fpn->stackSize < n) { \
             fprintf(stderr, op ": not enough operands " \
                     "(found %d, expected " #n ")\n", fpn->stackSize); \

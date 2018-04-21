@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "ops.h"
 #include "util.h"
@@ -141,6 +142,76 @@ void fpn_op_print(struct fpn *fpn) {
         mpfr_out_str(stdout, 10, 0, val, fpn->round);
     }
     puts("");
+}
+
+void fpn_op_dump(struct fpn *fpn) {
+    printf("[");
+    for (int i = 0; i < fpn->stackSize; ++i) {
+        if (i) printf(" ");
+        BIND(fpn->stack[i], val) {
+            mpq_out_str(stdout, 10, val);
+        } OR {
+            mpfr_out_str(stdout, 10, 0, val, fpn->round);
+        }
+    }
+    puts("]");
+}
+
+void pick(struct fpn *fpn, long n) {
+    CHECK(n, "pick [generic]");
+    BIND(ARG(n), val) {
+        mpq_ptr copy = malloc(sizeof *copy);
+        mpq_init(copy);
+        mpq_set(copy, val);
+        fpn_push(fpn, copy, RATIONAL);
+    } OR {
+        mpfr_ptr copy = malloc(sizeof *copy);
+        mpfr_init(copy);
+        mpfr_set(copy, val, fpn->round);
+        fpn_push(fpn, copy, FLOAT);
+    }
+}
+
+void roll(struct fpn *fpn, long n) {
+    CHECK(n, "roll [generic]");
+    struct val tmp = ARG(n);
+    memmove(fpn->stack + fpn->stackSize - n,
+            fpn->stack + fpn->stackSize - n + 1,
+            (n - 1) * sizeof(*fpn->stack));
+    fpn->stack[fpn->stackSize - 1] = tmp;
+}
+
+void del(struct fpn *fpn, long n) {
+    CHECK(n, "del [generic]");
+    roll(fpn, n);
+    fpn_pop(fpn);
+}
+
+void fpn_op_dup(struct fpn *fpn)  { pick(fpn, 1); }
+void fpn_op_drop(struct fpn *fpn) { del(fpn, 1);  }
+void fpn_op_swap(struct fpn *fpn) { roll(fpn, 2); }
+
+void fpn_op_over(struct fpn *fpn) { pick(fpn, 2); }
+void fpn_op_nip(struct fpn *fpn)  { del(fpn, 2);  }
+void fpn_op_rot(struct fpn *fpn)  { roll(fpn, 3); }
+
+void fpn_op_pick(struct fpn *fpn) {
+    CHECK(1, "pick");
+    BIND_INT(ARG1, count, "pick");
+    fpn_pop(fpn);
+    pick(fpn, count);
+}
+void fpn_op_del(struct fpn *fpn) {
+    CHECK(1, "del");
+    BIND_INT(ARG1, count, "del");
+    fpn_pop(fpn);
+    del(fpn, count);
+}
+void fpn_op_roll(struct fpn *fpn) {
+    CHECK(1, "roll");
+    BIND_INT(ARG1, count, "roll");
+    fpn_pop(fpn);
+    roll(fpn, count);
 }
 
 char* fpn_op_const(struct fpn *fpn, char *code) {
