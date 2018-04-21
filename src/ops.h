@@ -21,25 +21,25 @@
 
 #include "fpn.h"
 
-void fpn_op_add(struct fpn *fpn);
-void fpn_op_sub(struct fpn *fpn);
-void fpn_op_mul(struct fpn *fpn);
-void fpn_op_div(struct fpn *fpn);
+#define FORALL_OPS(_) \
+    _(add)   \
+    _(sub)   \
+    _(mul)   \
+    _(div)   \
+    _(print) \
+    _(dump)  \
+    _(dup)   \
+    _(drop)  \
+    _(swap)  \
+    _(over)  \
+    _(nip)   \
+    _(rot)   \
+    _(pick)  \
+    _(del)   \
+    _(roll)
 
-void fpn_op_print(struct fpn *fpn);
-void fpn_op_dump(struct fpn *fpn);
-
-void fpn_op_dup(struct fpn *fpn);
-void fpn_op_drop(struct fpn *fpn);
-void fpn_op_swap(struct fpn *fpn);
-
-void fpn_op_over(struct fpn *fpn);
-void fpn_op_nip(struct fpn *fpn);
-void fpn_op_rot(struct fpn *fpn);
-
-void fpn_op_pick(struct fpn *fpn);
-void fpn_op_del(struct fpn *fpn);
-void fpn_op_roll(struct fpn *fpn);
+#define defop(op) void fpn_op_ ## op(struct fpn*);
+FORALL_OPS(defop)
 
 char* fpn_op_const(struct fpn *fpn, char *code);
 

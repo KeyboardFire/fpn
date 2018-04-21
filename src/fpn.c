@@ -32,7 +32,7 @@ struct fpn *fpn_init() {
     return fpn;
 }
 
-#define WORD(x) else if (!strncmp(code, #x, sizeof(#x) - 1)) { \
+#define defword(x) else if (!strncmp(code, #x, sizeof(#x) - 1)) { \
     (fpn_op_ ## x)(fpn); \
     code += sizeof(#x) - 1; \
 }
@@ -47,21 +47,7 @@ void fpn_run(struct fpn *fpn, char *code) {
             case '/': fpn_op_div(fpn); ++code; break;
             default:
             if (0);
-            WORD(add)
-            WORD(sub)
-            WORD(mul)
-            WORD(div)
-            WORD(print)
-            WORD(dump)
-            WORD(dup)
-            WORD(drop)
-            WORD(swap)
-            WORD(over)
-            WORD(nip)
-            WORD(rot)
-            WORD(pick)
-            WORD(del)
-            WORD(roll)
+            FORALL_OPS(defword)
             else ++code;
         }
     }
