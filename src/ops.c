@@ -216,10 +216,16 @@ void fpn_op_roll(struct fpn *fpn) {
 
 char* fpn_op_const(struct fpn *fpn, char *code) {
     int isFloat = 0;
+    char *expIdx = 0;
+    int negExp = 0;
     char *end, old;
     for (end = code; *end; ++end) {
-        if (*end == '.') isFloat = 1;
-        else if (*end < '0' || '9' < *end) break;
+        if (!expIdx && *end == '.') isFloat = 1;
+        else if (!expIdx && (*end == 'e' || *end == 'E')) {
+            if (end[1] == '-') { negExp = 1; ++end; }
+            else if (end[1] < '0' || '9' < end[1]) break;
+            expIdx = end;
+        } else if (*end < '0' || '9' < *end) break;
     }
     old = *end;
     *end = 0;
@@ -232,7 +238,17 @@ char* fpn_op_const(struct fpn *fpn, char *code) {
     } else {
         mpq_ptr q = malloc(sizeof *q);
         mpq_init(q);
+        if (expIdx) expIdx[-negExp] = 0;
         mpq_set_str(q, code, 10); // TODO assert?
+        if (expIdx) {
+            unsigned long exp = strtoul(expIdx + 1, 0, 10);
+            mpz_t mult;
+            mpz_init(mult);
+            mpz_ui_pow_ui(mult, 10, exp);
+            if (negExp) mpz_set(mpq_denref(q), mult), mpq_canonicalize(q);
+            else mpz_mul(mpq_numref(q), mpq_numref(q), mult);
+            mpz_clear(mult);
+        }
         fpn_push_q(fpn, q);
     }
 

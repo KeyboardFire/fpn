@@ -38,7 +38,7 @@ struct fpn *fpn_init() {
 }
 void fpn_run(struct fpn *fpn, char *code) {
     while (*code) {
-        if ('0' <= *code && *code <= '9') {
+        if (('0' <= *code && *code <= '9') || *code == '.') {
             code = fpn_op_const(fpn, code);
         } else switch (*code) {
             case '+': fpn_op_add(fpn); ++code; break;
